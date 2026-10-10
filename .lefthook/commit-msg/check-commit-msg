@@ -1,0 +1,36 @@
+#!/bin/bash
+
+MSG_FILE="$1"
+
+# ファイルが存在しない、またはサイズが 0 の場合は少し待機して再読み込みを試みる
+if [ ! -s "$MSG_FILE" ]; then
+  sleep 0.1
+fi
+
+# メッセージの1行目を取得（空行を除外して最初のテキスト行を取得）
+FIRST_LINE=$(grep -v '^[[:space:]]*$' "$MSG_FILE" | grep -v '^#' | head -n 1)
+
+# 万が一それでも空だった場合の保護
+if [ -z "$FIRST_LINE" ]; then
+  echo "❌ [ERROR] コミットメッセージが空、または読み込めませんでした。"
+  exit 1
+fi
+
+# Conventional Commits の正規表現パターン
+PATTERN="^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-zA-Z0-9_\-]+\))?: .+"
+
+if ! [[ "$FIRST_LINE" =~ $PATTERN ]]; then
+  echo ""
+  echo "❌ [ERROR] コミットメッセージの形式が正しくありません。"
+  echo "   入力値: \"$FIRST_LINE\""
+  echo ""
+  echo "   フォーマット例:"
+  echo "     feat: ログイン機能を追加"
+  echo "     fix(auth): セッション切れエラーを修正"
+  echo "     chore: 依存ライブラリを更新"
+  echo ""
+  echo "   使用可能なType:"
+  echo "     feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert"
+  echo ""
+  exit 1
+fi
