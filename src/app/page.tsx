@@ -28,7 +28,7 @@ async function getPolls(): Promise<Poll[]> {
   }
 }
 
-export default async function Page() {
+export default async function Home() {
   const polls = await getPolls();
 
   return (
